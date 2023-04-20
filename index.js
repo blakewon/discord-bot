@@ -5,7 +5,8 @@ const Discord = require('discord.js');
 const Client = require('./client/Client');
 const config = require('./config.json');
 const {Player} = require('discord-player');
-
+const {Queue} = require('discord-player');
+const {QueryType} = require('discord-player');
 const { ActivityType } = require('discord.js');
 
 const client = new Client();
@@ -17,6 +18,10 @@ for (const file of commandFiles) {
   const command = require(`./commands/${file}`);
   client.commands.set(command.name, command);
 }
+
+ggltoken = "AIzaSyDrXFQataI2mRaG62OFQ5Zzz-mKfqyzVVY"
+previous_song = "";
+//previous_user: any;
 
 console.log(client.commands);
 
@@ -47,6 +52,9 @@ player.on('connectionError', (queue, error) => {
 
 player.on('trackStart', (queue, track) => {
   queue.metadata.send(`▶ | Started playing: **${track.title}** in **${queue.connection.channel.name}**!`);
+  console.log(track.url.split('?v=')[1])
+  previous_song = track.url.split('?v=')[1];
+
 });
 
 player.on('trackAdd', (queue, track) => {
@@ -62,12 +70,28 @@ player.on('channelEmpty', queue => {
 });
 
 player.on('queueEnd', queue => {
-  queue.metadata.send('✅ | Queue finished!');
+  retarded_shit = fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&relatedToVideoId=${previous_song}&type=video&key=` + ggltoken)
+  .then(response => response.json())
+  .then(
+    data => player.search(data['items'][0]['id']['videoId'],
+    {
+      requestedBy: client,
+      searchEngine: QueryType.AUTO,
+
+    }))
+  .then(data => {
+    queue.addTrack(data['tracks'][0])
+    queue.forceNext()
+  })
+  .catch(error => console.error(error));
 });
+
+//data['items'][0]['id']['videoId'])
 
 client.once('ready', async () => {
   console.log('Ready!');
 });
+
 
 client.on('ready', function() {
   client.user.setPresence({
