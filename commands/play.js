@@ -39,6 +39,7 @@ module.exports = {
       const query = interaction.options.getString('query');
       const searchResult = await player
         .search(query, {
+          leaveOnEnd: false,
           requestedBy: interaction.user,
           searchEngine: QueryType.AUTO,
         })
