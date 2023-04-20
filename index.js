@@ -89,21 +89,22 @@ player.on('queueEnd', queue => {
     fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&relatedToVideoId=${previous_songs[previous_songs.length - 1]}&type=video&key=` + ggltoken)
         .then(response => response.json())
         .then(data => {
-            for (let i in data['items']){
-                if (!previous_songs.includes(data['items'][i]['id']['videoId'])) {
-                    let toPlay = data['items'][i]['id']['videoId']
-                    player.search(toPlay, {
+          for (item in data.items) {
+            console.log(data.items[item].id.videoId)
+            if (!previous_songs.includes(data.items[item].id.videoId)) {
+                let toPlay = data.items[item].id.videoId
+                player.search(toPlay, {
                         requestedBy: client.user, searchEngine: QueryType.AUTO,
                     })
-                        .then(data => {
-                            queue.addTrack(data['tracks'][0])
-                            queue.forceNext()
-                        })
+                    .then(data => {
+                        queue.addTrack(data.tracks[0])
+                        queue.forceNext()
+                    })
                     break;
-                }
             }
-        })
-        .catch(error => console.error(error));
+        }
+      })
+      .catch(error => console.error(error));
 });
 
 //data['items'][0]['id']['videoId'])
